@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Funny Toggle Switch with Emojis</title>
+  <title>Funny Toggle Switch with Emojis + Fireworks</title>
   <style>
     body {
       font-family: sans-serif;
@@ -12,7 +12,7 @@
       height: 100vh;
       position: relative;
       text-align: center;
-      background-color: #f0f0f0;
+      background-color: black;
       background-size: cover;
       background-position: center;
       transition: background-image 0.5s ease;
@@ -80,14 +80,24 @@
     .message {
       margin-top: 20px;
       font-size: 1.3em;
-      color: #333;
+      color: white; /* Good for blue background */
       opacity: 0;
       transition: opacity 0.6s ease;
-      min-height: 1.6em; /* reserve space */
+      min-height: 1.6em;
+      z-index: 11;
+      position: relative;
     }
 
     .message.visible {
       opacity: 1;
+    }
+
+    canvas#fireworksCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 5;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -102,10 +112,14 @@
 
   <div class="message" id="funnyMessage"></div>
 
+  <canvas id="fireworksCanvas"></canvas>
+
   <script>
     const toggle = document.getElementById('toggle');
     const message = document.getElementById('funnyMessage');
     const container = document.getElementById('switchContainer');
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas.getContext('2d');
 
     const funnyMessages = [
       "🌀 You just flipped the universe!",
@@ -115,7 +129,7 @@
       "🔥 Power levels: over 9000!",
       "🧠 You toggled it. It toggled you back.",
       "🔄 Switcheroo complete!",
-      "🙏 The toggle gods are pleased.",
+      "🙏 The toggle gods are pleased!",
       "🕵️‍♂️ You pressed it. Something happened. Maybe.",
       "🎉 Congratulations, you're now in control!"
     ];
@@ -125,6 +139,74 @@
 
     let isDodgingCooldown = false;
 
+    // Resize canvas to full screen
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Fireworks effect
+    let particles = [];
+    let fireworksActive = false;
+
+    function createFirework() {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height / 2;
+      const colors = ["#ff0040", "#ff8000", "#ffff00", "#00ff00", "#00ffff", "#0080ff", "#8000ff"];
+
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x, y,
+          angle: Math.random() * 2 * Math.PI,
+          speed: Math.random() * 5 + 2,
+          radius: Math.random() * 3 + 1,
+          alpha: 1,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+    }
+
+    function updateFireworks() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed;
+        p.alpha -= 0.01;
+      });
+
+      particles = particles.filter(p => p.alpha > 0);
+
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+      });
+
+      ctx.globalAlpha = 1;
+
+      if (fireworksActive) {
+        if (Math.random() < 0.1) createFirework();
+        requestAnimationFrame(updateFireworks);
+      }
+    }
+
+    function startFireworks() {
+      fireworksActive = true;
+      createFirework();
+      updateFireworks();
+    }
+
+    function stopFireworks() {
+      fireworksActive = false;
+      particles = [];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Dodge logic
     document.addEventListener('mousemove', (e) => {
       if (isDodgingCooldown || container.classList.contains('hide')) return;
 
@@ -136,7 +218,6 @@
 
       if (distance < 100) {
         isDodgingCooldown = true;
-
         const speed = (Math.random() * 1.1 + 0.1).toFixed(2);
         container.style.transition = `top ${speed}s ease, left ${speed}s ease`;
 
@@ -151,14 +232,11 @@
       }
     });
 
+    // Toggle logic
     toggle.addEventListener('change', () => {
-      let filteredMessages;
-
-      if (toggle.checked) {
-        filteredMessages = funnyMessages;
-      } else {
-        filteredMessages = funnyMessages.filter(msg => msg !== specialMessage);
-      }
+      let filteredMessages = toggle.checked
+        ? funnyMessages
+        : funnyMessages.filter(msg => msg !== specialMessage);
 
       const randomIndex = Math.floor(Math.random() * filteredMessages.length);
       const selectedMessage = filteredMessages[randomIndex];
@@ -171,14 +249,17 @@
 
       if (selectedMessage === specialMessage) {
         document.body.style.backgroundImage = `url('${backgroundUrl}')`;
-        container.classList.add('hide'); // Hide the switch
+        container.classList.add('hide');
+        startFireworks();
       } else {
         document.body.style.backgroundImage = 'none';
-        container.classList.remove('hide'); // Show the switch again
+        container.classList.remove('hide');
+        stopFireworks();
       }
     });
   </script>
 
 </body>
 </html>
+
 
