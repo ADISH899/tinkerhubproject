@@ -186,6 +186,10 @@
         const btnWidth = container.offsetWidth;
         const btnHeight = container.offsetHeight;
 
+        const currentLeft = container.offsetLeft;
+        const currentTop = container.offsetTop;
+        const minDistance = 120; // minimum movement in pixels
+
         let newLeft, newTop;
         let attempts = 0;
 
