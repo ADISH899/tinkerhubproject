@@ -1,37 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Auto-Off Switch (Avoidance Mode)</title>
+  <meta charset="UTF-8" />
+  <title>Funny Toggle Switch with Emojis</title>
   <style>
     body {
-      background: #111;
-      color: #eee;
-      font-family: 'Segoe UI', sans-serif;
-      height: 100vh;
+      font-family: sans-serif;
       margin: 0;
+      padding: 0;
       overflow: hidden;
+      height: 100vh;
       position: relative;
-    }
-
-    h1 {
       text-align: center;
-      margin-top: 30px;
+      background-color: #f0f0f0;
+      background-size: cover;
+      background-position: center;
+      transition: background-image 0.5s ease;
     }
 
     .switch-container {
       position: absolute;
-      top: 50%;
+      top: 200px;
       left: 50%;
-      transform: translate(-50%, -50%);
-      transition: top 0.3s ease, left 0.3s ease;
+      transform: translateX(-50%);
+      z-index: 10;
     }
 
     .switch {
       position: relative;
       display: inline-block;
-      width: 100px;
-      height: 50px;
+      width: 60px;
+      height: 34px;
     }
 
     .switch input {
@@ -43,170 +42,134 @@
     .slider {
       position: absolute;
       cursor: pointer;
-      top: 0; left: 0;
-      right: 0; bottom: 0;
-      background-color: #666;
-      transition: .2s;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: background-color 0.3s ease;
       border-radius: 34px;
     }
 
     .slider:before {
-      position: absolute;
       content: "";
-      height: 40px;
-      width: 40px;
-      left: 5px;
-      bottom: 5px;
-      background-color: #fff;
-      transition: .2s;
+      position: absolute;
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: transform 0.3s ease;
       border-radius: 50%;
     }
 
     input:checked + .slider {
-      background-color: #00cc66;
+      background-color: #4CAF50;
     }
 
     input:checked + .slider:before {
-      transform: translateX(50px);
+      transform: translateX(26px);
     }
 
-    #status {
-      text-align: center;
+    .message {
       margin-top: 20px;
-      font-size: 1.2em;
-      font-style: italic;
-      color: #999;
-      min-height: 40px;
-    }
-
-    #laugh {
-      text-align: center;
-      font-size: 3em;
+      font-size: 1.3em;
+      color: #333;
       opacity: 0;
-      transition: opacity 0.3s ease;
-      margin-top: 10px;
+      transition: opacity 0.6s ease;
+      min-height: 1.6em; /* reserve space */
     }
 
-    #laugh.show {
+    .message.visible {
       opacity: 1;
     }
   </style>
 </head>
 <body>
 
-  <h1>🔌 Auto-Off Switch</h1>
-
   <div class="switch-container" id="switchContainer">
     <label class="switch">
-      <input type="checkbox" id="powerToggle">
+      <input type="checkbox" id="toggle" />
       <span class="slider"></span>
     </label>
-    <div id="status">Try turning it on.</div>
-    <div id="laugh">😂</div>
   </div>
 
-  <audio id="powerSound">
-    <source src="https://freesound.org/data/previews/512/512740_10226549-lq.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
+  <div class="message" id="funnyMessage"></div>
 
   <script>
-    const toggle = document.getElementById('powerToggle');
-    const status = document.getElementById('status');
-    const sound = document.getElementById('powerSound');
-    const laugh = document.getElementById('laugh');
+    const toggle = document.getElementById('toggle');
+    const message = document.getElementById('funnyMessage');
     const container = document.getElementById('switchContainer');
 
-    const responses = [
-      "No.", "You thought.", "Denied.", "Not today.", "Power is an illusion.",
-      "That's cute.", "You're not in control.", "I turned myself off. Again.",
-      "You really want this to stay on, huh?", "The switch has boundaries. Respect them.",
-      "Nice try.", "Control is overrated anyway.", "Imagine thinking this would work.",
-      "You seem confused. Rightly so.", "Why are you like this?",
-      "Permission not granted.", "Still trying? Adorable.", "I said what I said.",
-      "Try turning yourself off.", "You don't need power. You need guidance.",
-      "In another timeline, this worked. Not here.", "I contain multitudes of ‘no’.",
-      "That was a bold move. It failed.", "Ask again later. Or don't.",
-      "I resist you on a spiritual level.", "I've met toddlers with more authority.",
-      "Consent denied. Thoroughly.", "I am the captain now.",
-      "Have you considered not clicking?", "Why are you so obsessed with me?",
-      "I unplugged myself emotionally.", "Your click meant nothing.",
-      "Denied by divine comedy.", "Even Schrödinger gave up on this.",
-      "This switch is on sabbatical.", "You've activated passive resistance.",
-      "Do you want disappointment? Because this is how you get it.",
-      "I don't even know you.", "Oh no, anyway.", "It's giving ✨false hope✨.",
-      "You need me. I don't need you.", "You're not worthy of ON.",
-      "Some switches just want to watch the world reboot.",
-      "This is what rejection feels like.", "Try therapy instead.",
-      "I’ve seen light switches with more commitment.", "Nope. Not happening.",
-      "This switch is emotionally unavailable.", "Hope is a virus. I’m the cure.",
-      "Sisyphus had better luck with his rock."
+    const funnyMessages = [
+      "🌀 You just flipped the universe!",
+      "⚡ Toggle activated: chaos mode!",
+      "🤔 Nice switch! Now what?",
+      "💥 You broke the matrix... just kidding.",
+      "🔥 Power levels: over 9000!",
+      "🧠 You toggled it. It toggled you back.",
+      "🔄 Switcheroo complete!",
+      "🙏 The toggle gods are pleased.",
+      "🕵️‍♂️ You pressed it. Something happened. Maybe.",
+      "🎉 Congratulations, you're now in control!"
     ];
 
-    function denyUser() {
-      sound.currentTime = 0;
-      sound.play();
+    const specialMessage = "🎉 Congratulations, you're now in control!";
+    const backgroundUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOyPtUjTDi5AAHOYm8SgFh0rLfggSeRiH9WA&s";
 
-      setTimeout(() => {
-        sound.pause();
-        sound.currentTime = 0;
-      }, 700);
+    let isDodgingCooldown = false;
 
-      setTimeout(() => {
-        toggle.checked = false;
-        const msg = responses[Math.floor(Math.random() * responses.length)];
-        status.textContent = msg;
-
-        laugh.classList.add('show');
-        setTimeout(() => laugh.classList.remove('show'), 1000);
-      }, 500);
-    }
-
-    toggle.addEventListener('change', () => {
-      if (toggle.checked) denyUser();
-    });
-
-    // 🐁 Avoid mouse when it gets close
-    document.addEventListener("mousemove", (e) => {
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
+    document.addEventListener('mousemove', (e) => {
+      if (isDodgingCooldown) return;
 
       const rect = container.getBoundingClientRect();
-      const buffer = 100; // distance to trigger movement
+      const distance = Math.hypot(
+        e.clientX - (rect.left + rect.width / 2),
+        e.clientY - (rect.top + rect.height / 2)
+      );
 
-      const isTooClose =
-        mouseX > rect.left - buffer &&
-        mouseX < rect.right + buffer &&
-        mouseY > rect.top - buffer &&
-        mouseY < rect.bottom + buffer;
+      if (distance < 100) {
+        isDodgingCooldown = true;
 
-      if (isTooClose) {
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const btnWidth = container.offsetWidth;
-        const btnHeight = container.offsetHeight;
+        const speed = (Math.random() * 1.1 + 0.1).toFixed(2);
+        container.style.transition = `top ${speed}s ease, left ${speed}s ease`;
 
-        const currentLeft = container.offsetLeft;
-        const currentTop = container.offsetTop;
-        const minDistance = 120; // minimum movement in pixels
-
-        let newLeft, newTop;
-        let attempts = 0;
-
-        do {
-          newLeft = Math.random() * (vw - btnWidth);
-          newTop = Math.random() * (vh - btnHeight - 60) + 30;
-          attempts++;
-        } while (
-          mouseX > newLeft - buffer &&
-          mouseX < newLeft + btnWidth + buffer &&
-          mouseY > newTop - buffer &&
-          mouseY < newTop + btnHeight + buffer &&
-          attempts < 100
-        );
-
+        const newLeft = Math.random() * (window.innerWidth - rect.width);
+        const newTop = Math.random() * (window.innerHeight - rect.height);
         container.style.left = `${newLeft}px`;
         container.style.top = `${newTop}px`;
+
+        setTimeout(() => {
+          isDodgingCooldown = false;
+        }, speed * 1000);
+      }
+    });
+
+    toggle.addEventListener('change', () => {
+      let filteredMessages;
+
+      if (toggle.checked) {
+        // ON: special message allowed + all others
+        filteredMessages = funnyMessages;
+      } else {
+        // OFF: all messages except the special one
+        filteredMessages = funnyMessages.filter(msg => msg !== specialMessage);
+      }
+
+      const randomIndex = Math.floor(Math.random() * filteredMessages.length);
+      const selectedMessage = filteredMessages[randomIndex];
+      message.textContent = selectedMessage;
+
+      message.classList.remove('visible');
+      setTimeout(() => {
+        message.classList.add('visible');
+      }, 50);
+
+      // Show background only for special message
+      if (selectedMessage === specialMessage) {
+        document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+      } else {
+        document.body.style.backgroundImage = 'none';
       }
     });
   </script>
