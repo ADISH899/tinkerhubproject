@@ -24,6 +24,12 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
+      transition: opacity 0.4s ease;
+    }
+
+    .switch-container.hide {
+      opacity: 0;
+      pointer-events: none;
     }
 
     .switch {
@@ -120,7 +126,7 @@
     let isDodgingCooldown = false;
 
     document.addEventListener('mousemove', (e) => {
-      if (isDodgingCooldown) return;
+      if (isDodgingCooldown || container.classList.contains('hide')) return;
 
       const rect = container.getBoundingClientRect();
       const distance = Math.hypot(
@@ -149,10 +155,8 @@
       let filteredMessages;
 
       if (toggle.checked) {
-        // ON: special message allowed + all others
         filteredMessages = funnyMessages;
       } else {
-        // OFF: all messages except the special one
         filteredMessages = funnyMessages.filter(msg => msg !== specialMessage);
       }
 
@@ -165,14 +169,16 @@
         message.classList.add('visible');
       }, 50);
 
-      // Show background only for special message
       if (selectedMessage === specialMessage) {
         document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+        container.classList.add('hide'); // Hide the switch
       } else {
         document.body.style.backgroundImage = 'none';
+        container.classList.remove('hide'); // Show the switch again
       }
     });
   </script>
 
 </body>
 </html>
+
