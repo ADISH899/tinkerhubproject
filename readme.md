@@ -1,5 +1,5 @@
 
-# [Project Name] 🎯
+# [Useless Project] 🎯
 
 
 ## Basic Details
