@@ -1,5 +1,5 @@
 
-# [Useless Project] 🎯
+# [Toggle switch] 🎯
 
 
 ## Basic Details
