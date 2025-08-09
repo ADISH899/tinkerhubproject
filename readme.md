@@ -3,7 +3,7 @@
 
 
 ## Basic Details
-### Team Name: [Name]
+### Team Name: [loki]
 
 
 ### Team Members
